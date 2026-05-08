@@ -24,6 +24,8 @@ The sketch uses the SparkFun MAX3010x Arduino driver because it exposes MAX30101
 
 - `MAX30101/MAX30101.ino`: XIAO nRF52840 firmware.
 - `index.html`: Web Bluetooth dashboard.
+- `PPGMonitor.xcodeproj`: native iOS SwiftUI app.
+- `PPGMonitor/`: iOS app source, following the Air_Pressure app structure.
 - `MAX30101/MAX30101.ino.bak_20260508_initial`: backup of the original local sketch.
 
 ## BLE protocol
@@ -62,3 +64,16 @@ python -m http.server 8765 --bind 127.0.0.1
 
 3. Open `http://127.0.0.1:8765/index.html` in Chrome or Edge.
 4. Click `Connect`, choose `JingQiPPG`, then click `Start`.
+
+## iOS app
+
+Open `PPGMonitor.xcodeproj` in Xcode, select the `PPGMonitor` scheme, and run it on an iPhone or iPad. The app uses the same Nordic UART BLE UUIDs and commands as the web dashboard:
+
+- `S`: start streaming
+- `P`: pause streaming
+- `C`: scan I2C bus
+- `R`: reset MAX30101
+- `T`: read die temperature
+- `H`: print help
+
+The iOS dashboard displays Red, IR, and Green raw PPG waveforms, estimates the IR-channel period/BPM, logs raw BLE messages, and exports captured samples as CSV.

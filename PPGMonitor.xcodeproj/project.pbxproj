@@ -1,0 +1,302 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000010000000000000001 /* PPGMonitorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000001 /* PPGMonitorApp.swift */; };
+		A10000010000000000000002 /* BLEManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000002 /* BLEManager.swift */; };
+		A10000010000000000000003 /* NUSConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000003 /* NUSConstants.swift */; };
+		A10000010000000000000004 /* PPGSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000004 /* PPGSample.swift */; };
+		A10000010000000000000005 /* PPGPacketParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000005 /* PPGPacketParser.swift */; };
+		A10000010000000000000006 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000006 /* AppModel.swift */; };
+		A10000010000000000000007 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000007 /* DashboardView.swift */; };
+		A10000010000000000000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000009 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A10000110000000000000001 /* PPGMonitorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PPGMonitorApp.swift; sourceTree = "<group>"; };
+		A10000110000000000000002 /* BLEManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEManager.swift; sourceTree = "<group>"; };
+		A10000110000000000000003 /* NUSConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NUSConstants.swift; sourceTree = "<group>"; };
+		A10000110000000000000004 /* PPGSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PPGSample.swift; sourceTree = "<group>"; };
+		A10000110000000000000005 /* PPGPacketParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PPGPacketParser.swift; sourceTree = "<group>"; };
+		A10000110000000000000006 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		A10000110000000000000007 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		A10000110000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A10000110000000000000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
+		A10000110000000000000010 /* PPGMonitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PPGMonitor.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A10000030000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10000040000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A10000040000000000000002 /* PPGMonitor */,
+				A10000040000000000000007 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A10000040000000000000002 /* PPGMonitor */ = {
+			isa = PBXGroup;
+			children = (
+				A10000110000000000000001 /* PPGMonitorApp.swift */,
+				A10000040000000000000003 /* Bluetooth */,
+				A10000040000000000000004 /* Models */,
+				A10000040000000000000005 /* Parsing */,
+				A10000040000000000000006 /* Store */,
+				A10000040000000000000008 /* Views */,
+				A10000110000000000000008 /* Info.plist */,
+				A10000110000000000000009 /* Assets.xcassets */,
+			);
+			path = PPGMonitor;
+			sourceTree = "<group>";
+		};
+		A10000040000000000000003 /* Bluetooth */ = {
+			isa = PBXGroup;
+			children = (
+				A10000110000000000000002 /* BLEManager.swift */,
+				A10000110000000000000003 /* NUSConstants.swift */,
+			);
+			path = Bluetooth;
+			sourceTree = "<group>";
+		};
+		A10000040000000000000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A10000110000000000000004 /* PPGSample.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A10000040000000000000005 /* Parsing */ = {
+			isa = PBXGroup;
+			children = (
+				A10000110000000000000005 /* PPGPacketParser.swift */,
+			);
+			path = Parsing;
+			sourceTree = "<group>";
+		};
+		A10000040000000000000006 /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				A10000110000000000000006 /* AppModel.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+		A10000040000000000000007 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A10000110000000000000010 /* PPGMonitor.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A10000040000000000000008 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A10000110000000000000007 /* DashboardView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A10000050000000000000001 /* PPGMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000080000000000000002 /* Build configuration list for PBXNativeTarget "PPGMonitor" */;
+			buildPhases = (
+				A10000020000000000000001 /* Sources */,
+				A10000030000000000000001 /* Frameworks */,
+				A10000060000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PPGMonitor;
+			productName = PPGMonitor;
+			productReference = A10000110000000000000010 /* PPGMonitor.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A10000070000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2603;
+				LastUpgradeCheck = 2603;
+				TargetAttributes = {
+					A10000050000000000000001 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+				};
+			};
+			buildConfigurationList = A10000080000000000000001 /* Build configuration list for PBXProject "PPGMonitor" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10000040000000000000001;
+			productRefGroup = A10000040000000000000007 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A10000050000000000000001 /* PPGMonitor */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A10000060000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000008 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A10000020000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000006 /* AppModel.swift in Sources */,
+				A10000010000000000000002 /* BLEManager.swift in Sources */,
+				A10000010000000000000003 /* NUSConstants.swift in Sources */,
+				A10000010000000000000001 /* PPGMonitorApp.swift in Sources */,
+				A10000010000000000000004 /* PPGSample.swift in Sources */,
+				A10000010000000000000005 /* PPGPacketParser.swift in Sources */,
+				A10000010000000000000007 /* DashboardView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A10000090000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A10000090000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A10000090000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = SKSL6DSTM5;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PPGMonitor/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.linjingqi.PPGMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A10000090000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = SKSL6DSTM5;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PPGMonitor/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.linjingqi.PPGMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A10000080000000000000001 /* Build configuration list for PBXProject "PPGMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000090000000000000001 /* Debug */,
+				A10000090000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000080000000000000002 /* Build configuration list for PBXNativeTarget "PPGMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000090000000000000003 /* Debug */,
+				A10000090000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A10000070000000000000001 /* Project object */;
+}

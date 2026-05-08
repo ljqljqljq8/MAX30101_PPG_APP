@@ -1,2 +1,6 @@
 *.bak_*
 server_*.log
+*.xcuserstate
+xcuserdata/
+DerivedData/
+.DS_Store
