@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JingQi PPG Monitor</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --ink: #18212f;
+      --muted: #667085;
+      --line: #d9dde7;
+      --red: #e33b4f;
+      --ir: #2b63d9;
+      --green: #1f9f68;
+      --accent: #2155d9;
+      --warn: #a15d00;
+      --ok: #16784f;
+      --shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--ink);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 650;
+      padding: 8px 12px;
+    }
+
+    button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar-inner {
+      width: min(1180px, calc(100vw - 28px));
+      margin: 0 auto;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #e33b4f 0%, #ffffff 48%, #1f9f68 100%);
+      border: 1px solid var(--line);
+      box-shadow: inset 0 0 0 5px #ffffff;
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .pill.ok {
+      border-color: rgba(22, 120, 79, 0.25);
+      color: var(--ok);
+      background: #effaf5;
+    }
+
+    .pill.warn {
+      border-color: rgba(161, 93, 0, 0.25);
+      color: var(--warn);
+      background: #fff8ed;
+    }
+
+    main {
+      width: min(1180px, calc(100vw - 28px));
+      margin: 22px auto 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .workspace {
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .chart-wrap {
+      height: auto;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .chart-card {
+      min-width: 0;
+      height: clamp(160px, 18vh, 205px);
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .chart-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 36px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chart-card-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 700;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    .chart-range {
+      color: var(--muted);
+      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      min-width: 0;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .metric-value {
+      font: 700 22px/1.1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .log {
+      height: 250px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0f172a;
+      color: #d8e0f0;
+      padding: 10px;
+      font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre-wrap;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 0;
+    }
+
+    @media (max-width: 880px) {
+      .topbar-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+        padding: 12px 0;
+      }
+
+      .status-row {
+        justify-content: flex-start;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-wrap {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: 0;
+      }
+
+      .chart-card {
+        height: 210px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="mark" aria-hidden="true"></div>
+          <div>
+            <h1>JingQi PPG Monitor</h1>
+            <div class="subtitle">XIAO nRF52840 / MAX30101 / Nordic UART BLE</div>
+          </div>
+        </div>
+        <div class="status-row">
+          <span id="bleState" class="pill warn">Disconnected</span>
+          <span id="streamState" class="pill">Stream off</span>
+          <span id="signalState" class="pill">Signal --</span>
+          <span id="sampleState" class="pill">0 samples</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="workspace">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Raw PPG Waveform</h2>
+            <div class="legend">
+              <span class="key"><span class="swatch" style="background: var(--red)"></span>Red</span>
+              <span class="key"><span class="swatch" style="background: var(--ir)"></span>IR</span>
+              <span class="key"><span class="swatch" style="background: var(--green)"></span>Green</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="chart-wrap">
+              <div class="chart-card">
+                <div class="chart-card-head">
+                  <div class="chart-card-title"><span class="swatch" style="background: var(--red)"></span>Red</div>
+                  <div id="redRange" class="chart-range">--</div>
+                </div>
+                <canvas id="redChart" width="320" height="240"></canvas>
+              </div>
+              <div class="chart-card">
+                <div class="chart-card-head">
+                  <div class="chart-card-title"><span class="swatch" style="background: var(--ir)"></span>IR</div>
+                  <div id="irRange" class="chart-range">--</div>
+                </div>
+                <canvas id="irChart" width="320" height="240"></canvas>
+              </div>
+              <div class="chart-card">
+                <div class="chart-card-head">
+                  <div class="chart-card-title"><span class="swatch" style="background: var(--green)"></span>Green</div>
+                  <div id="greenRange" class="chart-range">--</div>
+                </div>
+                <canvas id="greenChart" width="320" height="240"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-label">Red</div>
+            <div id="redValue" class="metric-value">--</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">IR</div>
+            <div id="irValue" class="metric-value">--</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Green</div>
+            <div id="greenValue" class="metric-value">--</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Period</div>
+            <div id="periodValue" class="metric-value">--</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">Device Control</h2>
+        </div>
+        <div class="panel-body controls">
+          <button id="connectButton" class="primary">Connect</button>
+          <div class="control-grid">
+            <button id="startButton" disabled>Start</button>
+            <button id="pauseButton" disabled>Pause</button>
+            <button id="scanButton" disabled>I2C Scan</button>
+            <button id="resetButton" disabled>Reset</button>
+            <button id="tempButton" disabled>Temp</button>
+            <button id="clearButton">Clear</button>
+          </div>
+          <p class="hint">Use Chrome or Edge on a secure origin such as localhost. The firmware advertises as JingQiPPG.</p>
+          <div id="log" class="log"></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const NUS_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+    const NUS_RX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+    const NUS_TX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+    const MAX_POINTS = 200;
+    const PPG_MIN_PERIOD_MS = 400;
+    const PPG_MAX_PERIOD_MS = 1500;
+    const PERIOD_VARIATION_LIMIT = 0.28;
+
+    const ui = {
+      bleState: document.getElementById('bleState'),
+      streamState: document.getElementById('streamState'),
+      signalState: document.getElementById('signalState'),
+      sampleState: document.getElementById('sampleState'),
+      redValue: document.getElementById('redValue'),
+      irValue: document.getElementById('irValue'),
+      greenValue: document.getElementById('greenValue'),
+      periodValue: document.getElementById('periodValue'),
+      redRange: document.getElementById('redRange'),
+      irRange: document.getElementById('irRange'),
+      greenRange: document.getElementById('greenRange'),
+      log: document.getElementById('log'),
+      charts: {
+        red: document.getElementById('redChart'),
+        ir: document.getElementById('irChart'),
+        green: document.getElementById('greenChart')
+      },
+      connectButton: document.getElementById('connectButton'),
+      startButton: document.getElementById('startButton'),
+      pauseButton: document.getElementById('pauseButton'),
+      scanButton: document.getElementById('scanButton'),
+      resetButton: document.getElementById('resetButton'),
+      tempButton: document.getElementById('tempButton'),
+      clearButton: document.getElementById('clearButton')
+    };
+
+    const state = {
+      device: null,
+      rx: null,
+      tx: null,
+      textBuffer: '',
+      samples: [],
+      streaming: false,
+      connected: false,
+      totalSamples: 0,
+      drawPending: false
+    };
+
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    const channels = [
+      { key: 'red', label: 'Red', color: '--red', range: ui.redRange },
+      { key: 'ir', label: 'IR', color: '--ir', range: ui.irRange },
+      { key: 'green', label: 'Green', color: '--green', range: ui.greenRange }
+    ];
+
+    function log(message) {
+      const time = new Date().toLocaleTimeString();
+      ui.log.textContent += `[${time}] ${message}\n`;
+      ui.log.scrollTop = ui.log.scrollHeight;
+    }
+
+    function setConnected(connected) {
+      state.connected = connected;
+      ui.bleState.textContent = connected ? 'Connected' : 'Disconnected';
+      ui.bleState.className = connected ? 'pill ok' : 'pill warn';
+      ui.connectButton.textContent = connected ? 'Disconnect' : 'Connect';
+      ui.startButton.disabled = !connected;
+      ui.pauseButton.disabled = !connected;
+      ui.scanButton.disabled = !connected;
+      ui.resetButton.disabled = !connected;
+      ui.tempButton.disabled = !connected;
+      if (!connected) {
+        state.rx = null;
+        state.tx = null;
+        state.streaming = false;
+      }
+      setStreaming(state.streaming);
+    }
+
+    function setStreaming(streaming) {
+      state.streaming = streaming;
+      ui.streamState.textContent = streaming ? 'Stream on' : 'Stream off';
+      ui.streamState.className = streaming ? 'pill ok' : 'pill';
+    }
+
+    function clearSamples() {
+      state.samples = [];
+      state.totalSamples = 0;
+      ui.redValue.textContent = '--';
+      ui.irValue.textContent = '--';
+      ui.greenValue.textContent = '--';
+      ui.periodValue.textContent = '--';
+      ui.signalState.textContent = 'Signal --';
+      ui.signalState.className = 'pill';
+      ui.redRange.textContent = '--';
+      ui.irRange.textContent = '--';
+      ui.greenRange.textContent = '--';
+      ui.sampleState.textContent = '0 samples';
+      drawChart();
+    }
+
+    async function connect() {
+      if (!navigator.bluetooth) {
+        log('Web Bluetooth is not available in this browser.');
+        return;
+      }
+
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [
+            { services: [NUS_SERVICE] },
+            { namePrefix: 'JingQiPPG' }
+          ],
+          optionalServices: [NUS_SERVICE]
+        });
+
+        device.addEventListener('gattserverdisconnected', onDisconnected);
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService(NUS_SERVICE);
+        state.rx = await service.getCharacteristic(NUS_RX);
+        state.tx = await service.getCharacteristic(NUS_TX);
+        await state.tx.startNotifications();
+        state.tx.addEventListener('characteristicvaluechanged', onNotify);
+        state.device = device;
+        setConnected(true);
+        log(`Connected to ${device.name || 'BLE device'}.`);
+        log('Notifications enabled.');
+        await sendCommand('H');
+      } catch (error) {
+        log(`Connect failed: ${error.message}`);
+      }
+    }
+
+    async function disconnect() {
+      if (state.device && state.device.gatt.connected) {
+        await sendCommand('P').catch(() => {});
+        state.device.gatt.disconnect();
+      }
+      setConnected(false);
+    }
+
+    function onDisconnected() {
+      log('Device disconnected.');
+      setConnected(false);
+    }
+
+    async function sendCommand(command) {
+      if (!state.rx) {
+        log(`TX:${command} skipped, RX not ready.`);
+        return;
+      }
+      try {
+        const payload = encoder.encode(command);
+        if (state.rx.writeValueWithoutResponse) {
+          await state.rx.writeValueWithoutResponse(payload);
+        } else {
+          await state.rx.writeValue(payload);
+        }
+        log(`TX:${command}`);
+        if (command === 'S') {
+          setStreaming(true);
+        }
+        if (command === 'P') {
+          setStreaming(false);
+        }
+      } catch (error) {
+        log(`TX:${command} failed: ${error.message}`);
+      }
+    }
+
+    function onNotify(event) {
+      state.textBuffer += decoder.decode(event.target.value);
+      const lines = state.textBuffer.split('\n');
+      state.textBuffer = lines.pop();
+      for (const line of lines) {
+        handleLine(line.trim());
+      }
+    }
+
+    function handleLine(line) {
+      const cleanLine = line.replace(/[^\x20-\x7e]+/g, '').trim();
+      if (!cleanLine) {
+        return;
+      }
+
+      if (cleanLine.includes('B:')) {
+        const parsed = parseBatchLine(cleanLine);
+        if (parsed > 0) {
+          return;
+        }
+        log(`B_PARSE_EMPTY:${cleanLine.slice(0, 90)}`);
+        return;
+      }
+
+      if (cleanLine.startsWith('D:')) {
+        const fields = cleanLine.slice(2).split(',');
+        if (fields.length === 3) {
+          const sample = {
+            timeMs: nextFallbackTimeMs(),
+            red: Number.parseInt(fields[0], 16),
+            ir: Number.parseInt(fields[1], 16),
+            green: Number.parseInt(fields[2], 16)
+          };
+          addSample(sample);
+        }
+        return;
+      }
+
+      if (cleanLine === 'STREAM:ON') {
+        setStreaming(true);
+      } else if (cleanLine === 'STREAM:OFF') {
+        setStreaming(false);
+      }
+
+      log(cleanLine);
+    }
+
+    function parseBatchLine(line) {
+      const batchStart = line.indexOf('B:');
+      if (batchStart < 0) {
+        return 0;
+      }
+
+      let parsed = 0;
+      const payload = line.slice(batchStart + 2);
+      const matches = payload.matchAll(/(\d+),([0-9a-fA-F]{1,5}),([0-9a-fA-F]{1,5}),([0-9a-fA-F]{1,5})/g);
+      for (const match of matches) {
+        const sample = {
+          timeMs: Number.parseInt(match[1], 10),
+          red: Number.parseInt(match[2], 16),
+          ir: Number.parseInt(match[3], 16),
+          green: Number.parseInt(match[4], 16)
+        };
+
+        if (Number.isFinite(sample.timeMs) &&
+            Number.isFinite(sample.red) &&
+            Number.isFinite(sample.ir) &&
+            Number.isFinite(sample.green)) {
+          addSample(sample);
+          parsed++;
+        }
+      }
+
+      return parsed;
+    }
+
+    function nextFallbackTimeMs() {
+      const last = state.samples[state.samples.length - 1];
+      return last && Number.isFinite(last.timeMs) ? last.timeMs + 10 : 0;
+    }
+
+    function addSample(sample) {
+      if (!Number.isFinite(sample.timeMs)) {
+        sample.timeMs = nextFallbackTimeMs();
+      }
+
+      ui.redValue.textContent = sample.red.toString();
+      ui.irValue.textContent = sample.ir.toString();
+      ui.greenValue.textContent = sample.green.toString();
+      state.totalSamples++;
+      state.samples.push(sample);
+      if (state.samples.length > MAX_POINTS) {
+        state.samples.shift();
+      }
+
+      ui.sampleState.textContent = `${state.totalSamples} samples / ${sample.timeMs} ms`;
+      updatePeriodAnalysis();
+      scheduleDraw();
+    }
+
+    function updatePeriodAnalysis() {
+      const result = analyzePeriod(state.samples, 'ir');
+
+      if (!result.ready) {
+        ui.periodValue.textContent = '--';
+        ui.signalState.textContent = result.reason;
+        ui.signalState.className = 'pill';
+        return;
+      }
+
+      ui.periodValue.textContent = `${result.periodMs} ms`;
+      ui.signalState.textContent = `${result.kind} / ${result.bpm} BPM`;
+      ui.signalState.className = result.kind === 'PPG' ? 'pill ok' : 'pill warn';
+    }
+
+    function analyzePeriod(samples, key) {
+      if (samples.length < 60) {
+        return { ready: false, reason: 'Collecting' };
+      }
+
+      const values = samples.map((sample) => sample[key]);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const amplitude = max - min;
+      if (amplitude < 20) {
+        return { ready: false, reason: 'Low signal' };
+      }
+
+      const smoothed = values.map((value, index) => {
+        const prev = values[Math.max(0, index - 1)];
+        const next = values[Math.min(values.length - 1, index + 1)];
+        return (prev + value + next) / 3;
+      });
+      const mean = smoothed.reduce((sum, value) => sum + value, 0) / smoothed.length;
+      const threshold = mean + amplitude * 0.12;
+      const peaks = [];
+
+      for (let i = 1; i < smoothed.length - 1; i++) {
+        if (smoothed[i] <= threshold ||
+            smoothed[i] <= smoothed[i - 1] ||
+            smoothed[i] < smoothed[i + 1]) {
+          continue;
+        }
+
+        const peak = { timeMs: samples[i].timeMs, value: smoothed[i] };
+        const last = peaks[peaks.length - 1];
+        if (last && peak.timeMs - last.timeMs < 150) {
+          if (peak.value > last.value) {
+            peaks[peaks.length - 1] = peak;
+          }
+        } else {
+          peaks.push(peak);
+        }
+      }
+
+      if (peaks.length < 3) {
+        return { ready: false, reason: 'Few peaks' };
+      }
+
+      const periods = [];
+      for (let i = 1; i < peaks.length; i++) {
+        const period = peaks[i].timeMs - peaks[i - 1].timeMs;
+        if (period >= 150 && period <= 2500) {
+          periods.push(period);
+        }
+      }
+
+      if (periods.length < 2) {
+        return { ready: false, reason: 'Few peaks' };
+      }
+
+      const period = median(periods);
+      const variation = median(periods.map((value) => Math.abs(value - period))) / period;
+      const bpm = Math.round(60000 / period);
+      const physiologicalPeriod = period >= PPG_MIN_PERIOD_MS && period <= PPG_MAX_PERIOD_MS;
+      const stablePeriod = variation <= PERIOD_VARIATION_LIMIT;
+
+      return {
+        ready: true,
+        kind: physiologicalPeriod && stablePeriod ? 'PPG' : 'Noise',
+        periodMs: Math.round(period),
+        bpm
+      };
+    }
+
+    function median(values) {
+      const sorted = [...values].sort((a, b) => a - b);
+      const middle = Math.floor(sorted.length / 2);
+      if (sorted.length % 2 === 0) {
+        return (sorted[middle - 1] + sorted[middle]) / 2;
+      }
+      return sorted[middle];
+    }
+
+    function scheduleDraw() {
+      if (state.drawPending) {
+        return;
+      }
+      state.drawPending = true;
+      requestAnimationFrame(() => {
+        state.drawPending = false;
+        drawChart();
+      });
+    }
+
+    function fitCanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      const width = Math.max(220, Math.floor(rect.width * ratio));
+      const height = Math.max(170, Math.floor(rect.height * ratio));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { ctx, width: rect.width, height: rect.height };
+    }
+
+    function drawChart() {
+      channels.forEach(drawMiniChart);
+    }
+
+    function drawMiniChart(channel) {
+      const canvas = ui.charts[channel.key];
+      const { ctx, width, height } = fitCanvas(canvas);
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+
+      const pad = { left: 48, right: 12, top: 14, bottom: 26 };
+      const plotW = width - pad.left - pad.right;
+      const plotH = height - pad.top - pad.bottom;
+
+      ctx.strokeStyle = '#d9dde7';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.top + (plotH * i) / 4;
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(width - pad.right, y);
+      }
+      ctx.stroke();
+
+      if (state.samples.length < 2) {
+        channel.range.textContent = '--';
+        ctx.fillStyle = '#667085';
+        ctx.font = '13px system-ui, sans-serif';
+        ctx.fillText('Waiting for PPG samples', pad.left, pad.top + 24);
+        return;
+      }
+
+      const values = state.samples.map((sample) => sample[channel.key]);
+      let min = Math.min(...values);
+      let max = Math.max(...values);
+      if (min === max) {
+        min -= 1;
+        max += 1;
+      }
+      const headroom = (max - min) * 0.08;
+      min = Math.max(0, min - headroom);
+      max += headroom;
+
+      const firstTime = state.samples[0].timeMs;
+      const lastTime = state.samples[state.samples.length - 1].timeMs;
+      const timeSpanMs = Math.max(1, lastTime - firstTime);
+
+      channel.range.textContent = `${Math.round(min)}-${Math.round(max)} / ${(timeSpanMs / 1000).toFixed(2)}s`;
+
+      ctx.fillStyle = '#667085';
+      ctx.font = '12px ui-monospace, monospace';
+      ctx.fillText(max.toFixed(0), 8, pad.top + 4);
+      ctx.fillText(min.toFixed(0), 8, height - pad.bottom);
+
+      drawChannel(ctx, channel.key, getCss(channel.color), min, max, pad, plotW, plotH, firstTime, timeSpanMs);
+    }
+
+    function drawChannel(ctx, key, color, min, max, pad, plotW, plotH, firstTime, timeSpanMs) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+
+      state.samples.forEach((sample, index) => {
+        const x = pad.left + (plotW * (sample.timeMs - firstTime)) / timeSpanMs;
+        const normalized = (sample[key] - min) / (max - min);
+        const y = pad.top + plotH - normalized * plotH;
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+
+      ctx.stroke();
+
+      const last = state.samples[state.samples.length - 1];
+      const x = pad.left + (plotW * (last.timeMs - firstTime)) / timeSpanMs;
+      const normalized = (last[key] - min) / (max - min);
+      const y = pad.top + plotH - normalized * plotH;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function getCss(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    ui.connectButton.addEventListener('click', () => {
+      if (state.connected) {
+        disconnect();
+      } else {
+        connect();
+      }
+    });
+    ui.startButton.addEventListener('click', () => sendCommand('S'));
+    ui.pauseButton.addEventListener('click', () => sendCommand('P'));
+    ui.scanButton.addEventListener('click', () => sendCommand('C'));
+    ui.resetButton.addEventListener('click', () => sendCommand('R'));
+    ui.tempButton.addEventListener('click', () => sendCommand('T'));
+    ui.clearButton.addEventListener('click', () => {
+      clearSamples();
+      ui.log.textContent = '';
+    });
+    window.addEventListener('resize', drawChart);
+
+    setConnected(false);
+    drawChart();
+  </script>
+</body>
+</html>
