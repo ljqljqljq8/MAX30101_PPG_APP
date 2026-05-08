@@ -24,6 +24,8 @@
 
 - `MAX30101/MAX30101.ino`：XIAO nRF52840 固件。
 - `index.html`：Web Bluetooth 实时看板。
+- `PPGMonitor.xcodeproj`：原生 iOS SwiftUI app 工程。
+- `PPGMonitor/`：iOS app 源码。
 - `docs/images/web-bluetooth-ppg.png`：网页端蓝牙效果图。
 - `docs/images/ios-live-ppg.jpg`：iOS 端效果图。
 
@@ -63,3 +65,9 @@ python -m http.server 8765 --bind 127.0.0.1
 
 3. 在 Chrome 或 Edge 中打开 `http://127.0.0.1:8765/index.html`。
 4. 点击 `Connect`，选择 `JingQiPPG`，再点击 `Start`。
+
+## iOS app
+
+用 Xcode 打开 `PPGMonitor.xcodeproj`，选择 `PPGMonitor` scheme，然后在 iPhone 或 iPad 上运行。
+
+iOS app 使用和网页端相同的 Nordic UART BLE UUID 与命令，支持显示 Red、IR、Green 原始 PPG 波形，估算 IR 通道周期/BPM，记录原始 BLE 消息，并导出采集样本为 CSV。
