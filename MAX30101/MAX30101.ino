@@ -18,10 +18,14 @@ static const size_t BLE_FAST_CHUNK_BYTES = 120;
 static const bool SERIAL_SAMPLE_DEBUG = true;
 static const uint8_t LED_MODE_RED_IR_GREEN = 3;
 static const uint16_t PULSE_WIDTH_US = 411;
-static const uint16_t ADC_RANGE_NA = 16384;
-static const uint8_t RED_LED_CURRENT = 0x24;
-static const uint8_t IR_LED_CURRENT = 0x24;
-static const uint8_t GREEN_LED_CURRENT = 0x12;
+// 1. 降低 ADC 量程，提高接收灵敏度 (推荐 4096 或 8192)
+static const uint16_t ADC_RANGE_NA = 4096;
+// 2. 大幅提升绿光的驱动电流
+static const uint8_t RED_LED_CURRENT = 0x24;   // 保持 ~7.2mA
+static const uint8_t IR_LED_CURRENT = 0x24;    // 保持 ~7.2mA
+// 将绿光直接拉高到 0x7F (~25mA) 或 0xFF (50mA) 测试
+static const uint8_t GREEN_LED_CURRENT = 0x7F;
+
 
 MAX30105 ppg;
 BLEUart bleuart;
