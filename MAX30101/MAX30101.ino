@@ -2,30 +2,75 @@
 #include <Wire.h>
 #include <bluefruit.h>
 #include "MAX30105.h"
+#include "nrf.h"
 
 // XIAO nRF52840 default I2C pins: D4 = SDA, D5 = SCL.
 // MAX30101/MAX30102/MAX30105 7-bit I2C address used by the SparkFun driver.
 static const uint8_t MAX30101_ADDRESS = 0x57;
 
 static const char DEVICE_NAME[] = "JingQiPPG";
-static const uint16_t ADC_SAMPLE_RATE_HZ = 100;
+
+// === 採樣率設定 ===
+static const uint16_t ADC_SAMPLE_RATE_HZ = 400; 
 static const uint8_t FIFO_AVERAGE = 4;
-static const uint16_t FIFO_OUTPUT_RATE_HZ = ADC_SAMPLE_RATE_HZ / FIFO_AVERAGE;
+static const uint16_t FIFO_OUTPUT_RATE_HZ = ADC_SAMPLE_RATE_HZ / FIFO_AVERAGE; // 100Hz 輸出
 static const uint32_t SAMPLE_PERIOD_US = 1000000UL / FIFO_OUTPUT_RATE_HZ;
+
 static const uint8_t SAMPLES_PER_BLE_BATCH = 4;
 static const uint32_t BATCH_MAX_LATENCY_US = 45000UL;
 static const size_t BLE_FAST_CHUNK_BYTES = 120;
 static const bool SERIAL_SAMPLE_DEBUG = true;
 static const uint8_t LED_MODE_RED_IR_GREEN = 3;
-static const uint16_t PULSE_WIDTH_US = 411;
-// 1. 降低 ADC 量程，提高接收灵敏度 (推荐 4096 或 8192)
-static const uint16_t ADC_RANGE_NA = 4096;
-// 2. 大幅提升绿光的驱动电流
-static const uint8_t RED_LED_CURRENT = 0x24;   // 保持 ~7.2mA
-static const uint8_t IR_LED_CURRENT = 0x24;    // 保持 ~7.2mA
-// 将绿光直接拉高到 0x7F (~25mA) 或 0xFF (50mA) 测试
-static const uint8_t GREEN_LED_CURRENT = 0x7F;
+static const uint16_t PULSE_WIDTH_US = 411; // 411us 提供 18-bit 最高解析度
 
+// === 優化 4：提高 ADC 靈敏度與調整 LED 功率 ===
+// 將 ADC_RANGE 從 16384 降至 4096。
+// 這會讓感測器對光線變化敏感 4 倍，解決階梯狀波形與微小脈搏被淹沒的問題。
+static const uint16_t ADC_RANGE_NA = 4096;
+
+// MAX3010x 電流算法: Value * 0.2mA.
+// 調低紅光與 IR 以避免在提高靈敏度後過曝 (0x1F 約 6.2mA)
+static const uint8_t RED_LED_CURRENT = 0x1F;   
+static const uint8_t IR_LED_CURRENT = 0x1F;    
+// 大幅提高綠光功率 (0xE0 約 44.8mA)，以抵抗雜訊並獲取足夠的反射光
+static const uint8_t GREEN_LED_CURRENT = 0xE0; 
+
+// ---------- 4 MHz square-wave output on P0.28 (D2) ----------
+// Uses TIMER4 + GPIOTE channel 7 + PPI channel 7 (avoids BSP/SD conflicts).
+static void startClock4MHz_P0_28() {
+  // 1. Stop and clear TIMER4
+  NRF_TIMER4->TASKS_STOP  = 1;
+  NRF_TIMER4->TASKS_CLEAR = 1;
+
+  // 2. Configure TIMER4: timer mode, 16 MHz (no prescaler), 16-bit
+  NRF_TIMER4->MODE        = TIMER_MODE_MODE_Timer;
+  NRF_TIMER4->BITMODE     = TIMER_BITMODE_BITMODE_16Bit;
+  NRF_TIMER4->PRESCALER   = 0;            // f_timer = 16 MHz
+  
+  // 3. 產生 4MHz 方波 (每 2 個 tick 翻轉一次 -> 8MHz toggle -> 4MHz pulse)
+  NRF_TIMER4->CC[0]       = 2;            
+  
+  NRF_TIMER4->SHORTS      = TIMER_SHORTS_COMPARE0_CLEAR_Msk;
+  NRF_TIMER4->EVENTS_COMPARE[0] = 0;      // clear any pending event
+
+  // 4. Configure GPIOTE channel 7 to toggle P0.28
+  NRF_GPIOTE->CONFIG[7] =
+      (GPIOTE_CONFIG_MODE_Task       << GPIOTE_CONFIG_MODE_Pos)     |
+      (28                            << GPIOTE_CONFIG_PSEL_Pos)     |  // pin 28
+      (0                             << GPIOTE_CONFIG_PORT_Pos)     |  // port 0
+      (GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos) |
+      (GPIOTE_CONFIG_OUTINIT_Low     << GPIOTE_CONFIG_OUTINIT_Pos);
+
+  // 5. PPI channel 7: TIMER4->COMPARE[0] → GPIOTE->OUT[7]
+  NRF_PPI->CH[7].EEP = (uint32_t)&NRF_TIMER4->EVENTS_COMPARE[0];
+  NRF_PPI->CH[7].TEP = (uint32_t)&NRF_GPIOTE->TASKS_OUT[7];
+  NRF_PPI->CHENSET   = PPI_CHENSET_CH7_Msk;
+
+  // 6. Start TIMER4
+  NRF_TIMER4->TASKS_START = 1;
+
+  Serial.println("CLK:4MHz on P0.28 (D2) started");
+}
 
 MAX30105 ppg;
 BLEUart bleuart;
@@ -434,6 +479,7 @@ void setup() {
 
   setupBle();
   configureMax30101();
+  startClock4MHz_P0_28();   // D2 → 4 MHz square wave (after BLE/sensor init)
   printDeviceInfo();
 }
 
@@ -441,5 +487,5 @@ void loop() {
   serialRxPoll();
   handleCommands();
   pumpSamples();
-  delay(1);
+  delay(1); 
 }
