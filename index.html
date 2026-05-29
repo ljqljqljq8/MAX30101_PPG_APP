@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>JingQi PPG Monitor</title>
+  <title>PPG Monitor</title>
   <style>
     :root {
       color-scheme: light;
@@ -357,6 +357,7 @@
         <div class="status-row">
           <span id="bleState" class="pill warn">Disconnected</span>
           <span id="streamState" class="pill">Stream off</span>
+          <span id="recordState" class="pill">Not Recording</span>
           <span id="signalState" class="pill">Signal --</span>
           <span id="sampleState" class="pill">0 samples</span>
         </div>
@@ -430,6 +431,8 @@
           <div class="control-grid">
             <button id="startButton" disabled>Start</button>
             <button id="pauseButton" disabled>Pause</button>
+            <button id="recordButton" disabled>Record</button>
+            <button id="saveButton" disabled>Save CSV</button>
             <button id="scanButton" disabled>I2C Scan</button>
             <button id="resetButton" disabled>Reset</button>
             <button id="tempButton" disabled>Temp</button>
@@ -454,6 +457,7 @@
     const ui = {
       bleState: document.getElementById('bleState'),
       streamState: document.getElementById('streamState'),
+      recordState: document.getElementById('recordState'),
       signalState: document.getElementById('signalState'),
       sampleState: document.getElementById('sampleState'),
       redValue: document.getElementById('redValue'),
@@ -472,6 +476,8 @@
       connectButton: document.getElementById('connectButton'),
       startButton: document.getElementById('startButton'),
       pauseButton: document.getElementById('pauseButton'),
+      recordButton: document.getElementById('recordButton'),
+      saveButton: document.getElementById('saveButton'),
       scanButton: document.getElementById('scanButton'),
       resetButton: document.getElementById('resetButton'),
       tempButton: document.getElementById('tempButton'),
@@ -484,6 +490,8 @@
       tx: null,
       textBuffer: '',
       samples: [],
+      recordedData: [],
+      isRecording: false,
       streaming: false,
       connected: false,
       totalSamples: 0,
@@ -514,10 +522,12 @@
       ui.scanButton.disabled = !connected;
       ui.resetButton.disabled = !connected;
       ui.tempButton.disabled = !connected;
+      ui.recordButton.disabled = !connected && !state.isRecording;
       if (!connected) {
         state.rx = null;
         state.tx = null;
         state.streaming = false;
+        if (state.isRecording) toggleRecording();
       }
       setStreaming(state.streaming);
     }
@@ -531,6 +541,8 @@
     function clearSamples() {
       state.samples = [];
       state.totalSamples = 0;
+      state.recordedData = [];
+      if (typeof updateSaveButton === 'function') updateSaveButton();
       ui.redValue.textContent = '--';
       ui.irValue.textContent = '--';
       ui.greenValue.textContent = '--';
@@ -697,6 +709,11 @@
     function addSample(sample) {
       if (!Number.isFinite(sample.timeMs)) {
         sample.timeMs = nextFallbackTimeMs();
+      }
+
+      if (state.isRecording) {
+        state.recordedData.push({...sample});
+        updateSaveButton();
       }
 
       ui.redValue.textContent = sample.red.toString();
@@ -923,6 +940,41 @@
       return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     }
 
+    function toggleRecording() {
+      state.isRecording = !state.isRecording;
+      if (state.isRecording) {
+        ui.recordState.textContent = 'Recording';
+        ui.recordState.className = 'pill warn';
+        ui.recordButton.textContent = 'Stop';
+      } else {
+        ui.recordState.textContent = 'Not Recording';
+        ui.recordState.className = 'pill';
+        ui.recordButton.textContent = 'Record';
+      }
+      updateSaveButton();
+    }
+
+    function updateSaveButton() {
+      ui.saveButton.disabled = state.recordedData.length === 0 || state.isRecording;
+      ui.saveButton.textContent = state.recordedData.length > 0 ? `Save CSV (${state.recordedData.length})` : 'Save CSV';
+    }
+
+    function saveCSV() {
+      if (state.recordedData.length === 0) return;
+      let csvContent = "TimeMs,Red,IR,Green\n";
+      state.recordedData.forEach(row => {
+        csvContent += `${row.timeMs},${row.red},${row.ir},${row.green}\n`;
+      });
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `ppg_data_${new Date().getTime()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     ui.connectButton.addEventListener('click', () => {
       if (state.connected) {
         disconnect();
@@ -932,6 +984,8 @@
     });
     ui.startButton.addEventListener('click', () => sendCommand('S'));
     ui.pauseButton.addEventListener('click', () => sendCommand('P'));
+    ui.recordButton.addEventListener('click', toggleRecording);
+    ui.saveButton.addEventListener('click', saveCSV);
     ui.scanButton.addEventListener('click', () => sendCommand('C'));
     ui.resetButton.addEventListener('click', () => sendCommand('R'));
     ui.tempButton.addEventListener('click', () => sendCommand('T'));
